@@ -33,11 +33,11 @@ public class Globeworks {
         RED + " ________ _______ ______ __  __ _______\n" +
         interleaved6 +
         RED + "|  |  |  |       |   __ \\  |/  |     __|\n" +
-        YELLOW + "             " +
+        interleaved6 +
         RED + "|  |  |  |   -   |      <     <|__     |\n" +
-        YELLOW + "             " +
+        interleaved6 +
         RED + "|________|_______|___|__|__|\\__|_______|\n" +
-        YELLOW + "\n" +
+        YELLOW + "\n" + interleaved6 +
         YELLOW + pluginName + " v" + version + "\n" +
         RESET;
         return logo;
