@@ -121,9 +121,26 @@ public final class DynaShopAPI
                                          double deliveryCharge,
                                          boolean infiniteStock)
     {
+        openBuyConfirmGui(player, currency, shopName, tradeIdx, itemTemplate,
+                requestedAmount, affordableAmount, totalCost, deliveryCharge, infiniteStock,
+                BuyConfirm.LimitReason.MONEY);
+    }
+
+    public static void openBuyConfirmGui(Player player,
+                                         String currency,
+                                         String shopName,
+                                         String tradeIdx,
+                                         ItemStack itemTemplate,
+                                         int requestedAmount,
+                                         int affordableAmount,
+                                         double totalCost,
+                                         double deliveryCharge,
+                                         boolean infiniteStock,
+                                         BuyConfirm.LimitReason reason)
+    {
         BuyConfirm uiClass = new BuyConfirm();
         Inventory inventory = uiClass.getGui(player, currency, shopName, tradeIdx, itemTemplate,
-                requestedAmount, affordableAmount, totalCost, deliveryCharge, infiniteStock);
+                requestedAmount, affordableAmount, totalCost, deliveryCharge, infiniteStock, reason);
         UIManager.Open(player, inventory, uiClass);
     }
 

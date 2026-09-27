@@ -3,7 +3,6 @@ package me.sat7.dynamicshop.guis;
 import me.sat7.dynamicshop.DynaShopAPI;
 import me.sat7.dynamicshop.constants.Constants;
 import me.sat7.dynamicshop.transactions.Buy;
-import me.sat7.dynamicshop.utilities.LangUtil;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -21,11 +20,18 @@ import static me.sat7.dynamicshop.utilities.LangUtil.n;
 import static me.sat7.dynamicshop.utilities.LangUtil.t;
 
 /**
- * Shown when a buy request is reduced because the player cannot afford the full amount.
- * Confirm runs the purchase for the affordable quantity; Cancel returns to the trade screen.
+ * Shown when a buy is reduced because of balance and/or inventory space.
+ * Confirm runs the purchase for the reduced quantity; Cancel returns to the trade screen.
  */
 public final class BuyConfirm extends InGameUI
 {
+    public enum LimitReason
+    {
+        MONEY,
+        INVENTORY,
+        BOTH
+    }
+
     public BuyConfirm()
     {
         uiType = UI_TYPE.BuyConfirm;
@@ -45,6 +51,7 @@ public final class BuyConfirm extends InGameUI
     private double totalCost;
     private double deliveryCharge;
     private boolean infiniteStock;
+    private LimitReason reason = LimitReason.MONEY;
 
     public Inventory getGui(Player player,
                             String currency,
@@ -57,6 +64,22 @@ public final class BuyConfirm extends InGameUI
                             double deliveryCharge,
                             boolean infiniteStock)
     {
+        return getGui(player, currency, shopName, tradeIdx, itemTemplate,
+                requestedAmount, affordableAmount, totalCost, deliveryCharge, infiniteStock, LimitReason.MONEY);
+    }
+
+    public Inventory getGui(Player player,
+                            String currency,
+                            String shopName,
+                            String tradeIdx,
+                            ItemStack itemTemplate,
+                            int requestedAmount,
+                            int affordableAmount,
+                            double totalCost,
+                            double deliveryCharge,
+                            boolean infiniteStock,
+                            LimitReason reason)
+    {
         this.player = player;
         this.currency = currency;
         this.shopName = shopName;
@@ -67,6 +90,7 @@ public final class BuyConfirm extends InGameUI
         this.totalCost = totalCost;
         this.deliveryCharge = deliveryCharge;
         this.infiniteStock = infiniteStock;
+        this.reason = reason == null ? LimitReason.MONEY : reason;
 
         inventory = Bukkit.createInventory(player, 9, t(player, "BUY_CONFIRM.TITLE"));
 
@@ -86,10 +110,21 @@ public final class BuyConfirm extends InGameUI
         if (meta != null)
         {
             String priceStr = FormatCost(totalCost);
-            String name = t(player, "BUY_CONFIRM.INFO_NAME")
+            String nameKey = reason == LimitReason.INVENTORY
+                    ? "BUY_CONFIRM.INFO_NAME_INVENTORY"
+                    : "BUY_CONFIRM.INFO_NAME";
+            String loreKey;
+            if (reason == LimitReason.INVENTORY)
+                loreKey = "BUY_CONFIRM.INFO_LORE_INVENTORY";
+            else if (reason == LimitReason.BOTH)
+                loreKey = "BUY_CONFIRM.INFO_LORE_BOTH";
+            else
+                loreKey = "BUY_CONFIRM.INFO_LORE";
+
+            String name = t(player, nameKey)
                     .replace("{amount}", n(affordableAmount))
                     .replace("{requested}", n(requestedAmount));
-            String lore = t(player, "BUY_CONFIRM.INFO_LORE")
+            String lore = t(player, loreKey)
                     .replace("{amount}", n(affordableAmount))
                     .replace("{requested}", n(requestedAmount))
                     .replace("{price}", priceStr);

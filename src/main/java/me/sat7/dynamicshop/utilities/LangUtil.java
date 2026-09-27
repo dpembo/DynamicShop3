@@ -55,6 +55,10 @@ public final class LangUtil
             ccLang.get().addDefault("BUY_CONFIRM.OK_LORE", "§7이 수량으로 구매합니다");
             ccLang.get().addDefault("BUY_CONFIRM.CANCEL", "§c취소");
             ccLang.get().addDefault("BUY_CONFIRM.CANCEL_LORE", "§7구매를 취소합니다");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_NAME_INVENTORY", "§e인벤토리 공간");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE_INVENTORY", "§f인벤토리 공간으로 {requested}개 중 §a{amount}§f개만 받을 수 있습니다.\n§f가격: §a{price}\n\n§7확인을 누르면 구매합니다.");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE_BOTH", "§f잔액과 인벤토리 공간으로 {requested}개 중 §a{amount}§f개만 구매할 수 있습니다.\n§f가격: §a{price}\n\n§7확인을 누르면 구매합니다.");
+
 
             ccLang.get().addDefault("START_PAGE.ENTER_SHOP_NAME", "상점 이름을 입력하세요.");
             ccLang.get().addDefault("START_PAGE.DEFAULT_SHOP_LORE", "§f§n클릭: 상점으로 가기");
@@ -617,6 +621,10 @@ public final class LangUtil
             ccLang.get().addDefault("BUY_CONFIRM.OK_LORE", "§7Buy this amount");
             ccLang.get().addDefault("BUY_CONFIRM.CANCEL", "§cCancel");
             ccLang.get().addDefault("BUY_CONFIRM.CANCEL_LORE", "§7Cancel this purchase");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_NAME_INVENTORY", "§eInventory space");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE_INVENTORY", "§fYou only have space for §a{amount}§f of {requested}.\n§fCost: §a{price}\n\n§7Click Confirm to buy this amount.");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE_BOTH", "§fBalance and inventory space only allow §a{amount}§f of {requested}.\n§fCost: §a{price}\n\n§7Click Confirm to buy this amount.");
+
 
             ccLang.get().addDefault("START_PAGE.ENTER_SHOP_NAME", "Please enter shop name");
             ccLang.get().addDefault("START_PAGE.DEFAULT_SHOP_LORE", "§f§nClick: go to shop");

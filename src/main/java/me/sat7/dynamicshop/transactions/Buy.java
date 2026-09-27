@@ -7,6 +7,7 @@ import me.sat7.dynamicshop.economyhook.JobsHook;
 import me.sat7.dynamicshop.economyhook.PlayerpointHook;
 import me.sat7.dynamicshop.events.ShopBuySellEvent;
 import me.sat7.dynamicshop.files.CustomConfig;
+import me.sat7.dynamicshop.guis.BuyConfirm;
 import me.sat7.dynamicshop.guis.ItemTrade;
 import me.sat7.dynamicshop.utilities.*;
 import net.milkbowl.vault.economy.Economy;
@@ -56,6 +57,20 @@ public final class Buy
         double priceSellOld = DynaShopAPI.getSellPrice(shopName, itemStack);
         double deliveryCharge = priceSum; // caller passes delivery charge as the starting priceSum
         boolean limitedByMoney = false;
+        boolean limitedByInventory = false;
+
+        // Command items never go into inventory — skip space checks for those.
+        boolean commandItem = CommandItemUtil.IsCommandItem(data.get(), tradeIdx);
+        int inventorySpace = commandItem ? Integer.MAX_VALUE : GetInventorySpaceFor(player, itemStack, requestedAmount);
+        if (!commandItem && inventorySpace <= 0)
+        {
+            player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "MESSAGE.INVENTORY_FULL"));
+            return;
+        }
+        if (!commandItem && inventorySpace < requestedAmount)
+            limitedByInventory = true;
+
+        int amountCap = commandItem ? requestedAmount : Math.min(requestedAmount, inventorySpace);
 
         double playerBalance = 0;
         if (currency.equalsIgnoreCase(Constants.S_EXP))
@@ -81,7 +96,7 @@ public final class Buy
         int tradeLimitPerPlayer = ShopUtil.GetBuyLimitPerPlayer(shopName, tradeIdxInt);
         int playerTradingVolume = UserUtil.GetPlayerTradingVolume(player, shopName, HashUtil.GetItemHash(itemStack));
 
-        for (int i = 0; i < itemStack.getAmount(); i++)
+        for (int i = 0; i < amountCap; i++)
         {
             if (tradeLimitPerPlayer > 0 && tradeLimitPerPlayer <= playerTradingVolume + tradeAmount)
             {
@@ -113,24 +128,38 @@ public final class Buy
             tradeAmount++;
         }
 
-        // Partial buy due to balance: ask before spending (unless already confirmed).
-        if (!skipPartialConfirm
-                && limitedByMoney
+        // Partial buy due to balance and/or inventory space: ask before spending.
+        boolean needsConfirm = !skipPartialConfirm
                 && tradeAmount > 0
                 && tradeAmount < requestedAmount
-                && ConfigUtil.GetConfirmPartialBuy())
+                && ConfigUtil.GetConfirmPartialBuy()
+                && (limitedByMoney || limitedByInventory);
+
+        if (needsConfirm)
         {
             data.get().set(tradeIdx + ".stock", stockOld); // undo provisional stock change
+            BuyConfirm.LimitReason reason;
+            if (limitedByMoney && limitedByInventory)
+                reason = BuyConfirm.LimitReason.BOTH;
+            else if (limitedByInventory)
+                reason = BuyConfirm.LimitReason.INVENTORY;
+            else
+                reason = BuyConfirm.LimitReason.MONEY;
+
             DynaShopAPI.openBuyConfirmGui(player, currency, shopName, tradeIdx, itemStack,
-                    requestedAmount, tradeAmount, priceSum, deliveryCharge, infiniteStock);
+                    requestedAmount, tradeAmount, priceSum, deliveryCharge, infiniteStock, reason);
             return;
         }
 
-        // 실 구매 가능량이 0이다 = 돈이 없다.
+        // 실 구매 가능량이 0이다 = 돈이 없다. (or nothing fit after other limits)
         if (tradeAmount <= 0)
         {
             String message = "";
-            if (currency.equalsIgnoreCase(Constants.S_JOBPOINT))
+            if (limitedByInventory && !limitedByMoney)
+            {
+                message = DynamicShop.dsPrefix(player) + t(player, "MESSAGE.INVENTORY_FULL");
+            }
+            else if (currency.equalsIgnoreCase(Constants.S_JOBPOINT))
             {
                 message = DynamicShop.dsPrefix(player) + t(player, "MESSAGE.NOT_ENOUGH_POINT").replace("{bal}", n(playerBalance));
             }
@@ -191,7 +220,6 @@ public final class Buy
         }
 
         // 명령어 상품: 보여지는 아이템은 주지 않고 명령어만 실행
-        boolean commandItem = CommandItemUtil.IsCommandItem(data.get(), tradeIdx);
         if (commandItem)
             CommandItemUtil.RunCommands(data.get(), shopName, tradeIdx, player.getName(), player.getUniqueId(), tradeAmount);
 
@@ -249,6 +277,40 @@ public final class Buy
         // 이벤트 호출
         ShopBuySellEvent event = new ShopBuySellEvent(true, priceBuyOld, Calc.getCurrentPrice(shopName, tradeIdx, true), priceSellOld, DynaShopAPI.getSellPrice(shopName, itemStack), stockOld, DynaShopAPI.getStock(shopName, itemStack), DynaShopAPI.getMedian(shopName, itemStack), shopName, itemStack, player);
         Bukkit.getPluginManager().callEvent(event);
+    }
+
+    /**
+     * How many of {@code template} can still fit in the player's main inventory
+     * (storage slots only), counting empty slots and remaining stack space on similar items.
+     * Capped at {@code maxNeeded}.
+     */
+    static int GetInventorySpaceFor(Player player, ItemStack template, int maxNeeded)
+    {
+        if (maxNeeded <= 0)
+            return 0;
+
+        ItemStack probe = template.clone();
+        probe.setAmount(1);
+        int maxStack = Math.max(1, probe.getMaxStackSize());
+        int space = 0;
+
+        ItemStack[] contents = player.getInventory().getStorageContents();
+        for (ItemStack slot : contents)
+        {
+            if (slot == null || slot.getType().isAir())
+            {
+                space += maxStack;
+            }
+            else if (slot.isSimilar(probe))
+            {
+                space += Math.max(0, maxStack - slot.getAmount());
+            }
+
+            if (space >= maxNeeded)
+                return maxNeeded;
+        }
+
+        return space;
     }
 
     private static void SendBuyMessage(String currency, Economy econ, Player player, int actualAmount, double priceSum, ItemStack itemStack)

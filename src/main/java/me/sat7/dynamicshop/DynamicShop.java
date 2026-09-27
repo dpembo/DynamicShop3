@@ -179,6 +179,7 @@ public final class DynamicShop extends JavaPlugin implements Listener
     {
         plugin = this;
         console = plugin.getServer().getConsoleSender();
+        getLogger().info(Globeworks.logo("DynamicShop", getDescription().getVersion()));
 
         SetupVault();
     }
