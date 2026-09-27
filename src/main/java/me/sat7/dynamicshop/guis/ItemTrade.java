@@ -49,8 +49,7 @@ public final class ItemTrade extends InGameUI
     private final int SELL_ONLY_TOGGLE = 1;
     private final int BUY_ONLY_TOGGLE = 10;
     private final int CHECK_BALANCE = 0;
-    private final int STACK_SELL = 19;
-    private final int STACK_BUY = 25;
+    private final int STACK_BUY = 22;
 
     private Player player;
     private String shopName;
@@ -74,7 +73,7 @@ public final class ItemTrade extends InGameUI
         this.sellBuyOnly = shopData.getString(this.tradeIdx + ".tradeType", "");
         this.material = shopData.getString(tradeIdx + ".mat");
         this.itemMeta = (ItemMeta) shopData.get(tradeIdx + ".itemStack");
-        this.stackTradeEnabled = ConfigUtil.GetEnableStackTrade() && !shopData.contains("Options.flag.disablestacktrade");
+        this.stackTradeEnabled = ConfigUtil.GetEnableStackTrade() && !shopData.contains("Options.flag.disablestacktrade") && !this.sellBuyOnly.equalsIgnoreCase("SellOnly");
 
         UserUtil.userInteractItem.put(player.getUniqueId(), shopName + "/" + tradeIdx);
 
@@ -189,12 +188,9 @@ public final class ItemTrade extends InGameUI
                     data.save();
                     RefreshUI();
                 }
-            } else if (e.getSlot() == STACK_SELL)
-            {
-                DynaShopAPI.openStackTradeGui(player, shopName, tradeIdx, true);
             } else if (e.getSlot() == STACK_BUY)
             {
-                DynaShopAPI.openStackTradeGui(player, shopName, tradeIdx, false);
+                DynaShopAPI.openStackTradeGui(player, shopName, tradeIdx);
             } else
             {
                 if (player.hasPermission(P_ADMIN_SHOP_EDIT) && e.isShiftClick() && e.isRightClick())
@@ -339,8 +335,6 @@ public final class ItemTrade extends InGameUI
 
     private void CreateStackTradeButtons()
     {
-        if (!sellBuyOnly.equalsIgnoreCase("BuyOnly") && !CommandItemUtil.IsCommandItem(shopData, tradeIdx))
-            CreateButton(STACK_SELL, InGameUI.GetStackTradeButtonIconMat(), t(player, "STACK_TRADE.ENTRY_SELL"), t(player, "STACK_TRADE.ENTRY_SELL_LORE"));
         if (!sellBuyOnly.equalsIgnoreCase("SellOnly"))
             CreateButton(STACK_BUY, InGameUI.GetStackTradeButtonIconMat(), t(player, "STACK_TRADE.ENTRY_BUY"), t(player, "STACK_TRADE.ENTRY_BUY_LORE"));
     }
@@ -604,7 +598,6 @@ public final class ItemTrade extends InGameUI
             inventory.setItem(i, null);
         if (stackTradeEnabled)
         {
-            inventory.setItem(STACK_SELL, null);
             inventory.setItem(STACK_BUY, null);
         }
 

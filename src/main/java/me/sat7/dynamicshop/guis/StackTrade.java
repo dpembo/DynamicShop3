@@ -8,7 +8,6 @@ import me.sat7.dynamicshop.DynamicShop;
 import me.sat7.dynamicshop.files.CustomConfig;
 import me.sat7.dynamicshop.transactions.Buy;
 import me.sat7.dynamicshop.transactions.Calc;
-import me.sat7.dynamicshop.transactions.Sell;
 import me.sat7.dynamicshop.utilities.ConfigUtil;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 import org.bukkit.Bukkit;
@@ -25,12 +24,14 @@ import static me.sat7.dynamicshop.constants.Constants.P_ADMIN_SHOP_EDIT;
 import static me.sat7.dynamicshop.utilities.LangUtil.n;
 import static me.sat7.dynamicshop.utilities.LangUtil.t;
 
-// "Buy/Sell in Stacks": lets a player dial in a quantity in whole stacks (of the item's own max
-// stack size - 1 for anything that doesn't stack) with -32/-16/-1 and +1/+16/+32 buttons, see the
-// running total and price, then confirm. Reuses the existing Buy.buy()/Sell.sell() transaction
-// methods exactly as ItemTrade does, so pricing, stock, permissions, trade limits, delivery
-// charges and logging all behave identically to a normal trade - this only changes how the
-// quantity is chosen.
+// "Buy in Stacks": lets a player dial in a purchase quantity in whole stacks (of the item's own
+// max stack size - 1 for anything that doesn't stack) with -32/-16/-1 and +1/+16/+32 buttons, see
+// the running total and price, then confirm. Buy-only: selling doesn't need a quantity picker the
+// same way (players usually just want to offload everything they're carrying), and ItemTrade's
+// existing shift-click "sell all matching items" already covers that case.
+// Reuses the existing Buy.buy() transaction method directly, so pricing, stock, permissions,
+// trade limits, delivery charges and logging all behave identically to a normal trade - this
+// only changes how the quantity is chosen.
 public final class StackTrade extends InGameUI
 {
     public StackTrade()
@@ -51,24 +52,22 @@ public final class StackTrade extends InGameUI
     private Player player;
     private String shopName;
     private String tradeIdx;
-    private boolean sell;
     private String material;
     private ItemMeta itemMeta;
     private int unitSize;
     private int maxStacks;
     private int stackCount = 1;
 
-    public Inventory getGui(Player player, String shopName, String tradeIdx, boolean sell)
+    public Inventory getGui(Player player, String shopName, String tradeIdx)
     {
-        return getGui(player, shopName, tradeIdx, sell, 1);
+        return getGui(player, shopName, tradeIdx, 1);
     }
 
-    private Inventory getGui(Player player, String shopName, String tradeIdx, boolean sell, int initialStacks)
+    private Inventory getGui(Player player, String shopName, String tradeIdx, int initialStacks)
     {
         this.player = player;
         this.shopName = shopName;
         this.tradeIdx = tradeIdx;
-        this.sell = sell;
 
         FileConfiguration shopData = ShopUtil.shopConfigFiles.get(shopName).get();
         this.material = shopData.getString(tradeIdx + ".mat");
@@ -85,7 +84,7 @@ public final class StackTrade extends InGameUI
         this.stackCount = Math.max(1, Math.min(initialStacks, maxStacks));
 
         String uiTitle = shopData.getBoolean("Options.enable", true) ? "" : t(player, "SHOP.DISABLED");
-        uiTitle += t(player, sell ? "STACK_TRADE.TITLE_SELL" : "STACK_TRADE.TITLE_BUY");
+        uiTitle += t(player, "STACK_TRADE.TITLE_BUY");
         inventory = Bukkit.createInventory(player, 9, uiTitle);
 
         CreateCloseButton(player, CLOSE);
@@ -118,7 +117,7 @@ public final class StackTrade extends InGameUI
         ItemMeta meta = itemStack.getItemMeta();
 
         int totalAmount = stackCount * unitSize;
-        double[] calcResult = Calc.calcTotalCost(shopName, tradeIdx, sell ? -totalAmount : totalAmount);
+        double[] calcResult = Calc.calcTotalCost(shopName, tradeIdx, totalAmount);
         String priceText = FormatPrice(calcResult[0]);
 
         String name = t(player, "STACK_TRADE.SELECTED_NAME").replace("{stacks}", String.valueOf(stackCount));
@@ -138,11 +137,10 @@ public final class StackTrade extends InGameUI
     private void CreateConfirmButton()
     {
         int totalAmount = stackCount * unitSize;
-        double[] calcResult = Calc.calcTotalCost(shopName, tradeIdx, sell ? -totalAmount : totalAmount);
+        double[] calcResult = Calc.calcTotalCost(shopName, tradeIdx, totalAmount);
         String priceText = FormatPrice(calcResult[0]);
 
-        String key = sell ? "STACK_TRADE.CONFIRM_SELL" : "STACK_TRADE.CONFIRM_BUY";
-        String title = t(player, key)
+        String title = t(player, "STACK_TRADE.CONFIRM_BUY")
                 .replace("{amount}", n(totalAmount))
                 .replace("{item}", ItemsBeautifiedName());
         String lore = "§7" + priceText;
@@ -163,8 +161,7 @@ public final class StackTrade extends InGameUI
     {
         String currency = ShopUtil.GetCurrency(ShopUtil.shopConfigFiles.get(shopName).get());
         if (ShopUtil.IsMultiCurrency(currency))
-            return me.sat7.dynamicshop.economyhook.MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(currency), price,
-                    sell ? java.math.RoundingMode.FLOOR : java.math.RoundingMode.CEILING);
+            return me.sat7.dynamicshop.economyhook.MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(currency), price, java.math.RoundingMode.CEILING);
         return n(price);
     }
 
@@ -218,8 +215,7 @@ public final class StackTrade extends InGameUI
         ConfigurationSection optionS = shopData.getConfigurationSection("Options");
 
         String permission = optionS.getString("permission");
-        String permSuffix = sell ? ".sell" : ".buy";
-        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission) && !player.hasPermission(permission + permSuffix))
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission) && !player.hasPermission(permission + ".buy"))
         {
             player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "ERR.NO_PERMISSION"));
             return;
@@ -243,13 +239,10 @@ public final class StackTrade extends InGameUI
             }
         }
 
-        if (sell)
-            Sell.sell(ShopUtil.GetCurrency(shopData), player, shopName, tradeIdx, tempIS, -deliveryCharge, infiniteStock);
-        else
-            Buy.buy(ShopUtil.GetCurrency(shopData), player, shopName, tradeIdx, tempIS, deliveryCharge, infiniteStock);
+        Buy.buy(ShopUtil.GetCurrency(shopData), player, shopName, tradeIdx, tempIS, deliveryCharge, infiniteStock);
 
-        // Buy.buy()/Sell.sell() already reopen the normal trade screen once the transaction
-        // completes, so there's nothing left for this screen to do.
+        // Buy.buy() already reopens the normal trade screen once the transaction completes,
+        // so there's nothing left for this screen to do.
     }
 
     @Override

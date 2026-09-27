@@ -109,8 +109,8 @@ public final class DynaShopAPI
         UIManager.Open(player, inventory, uiClass);
     }
 
-    // "구매/판매 수량을 스택 단위로 선택" 화면 생성 및 열기
-    public static void openStackTradeGui(Player player, String shopName, String tradeIdx, boolean sell)
+    // "구매 수량을 스택 단위로 선택" 화면 생성 및 열기
+    public static void openStackTradeGui(Player player, String shopName, String tradeIdx)
     {
         if(!IsShopEnable(shopName))
         {
@@ -122,7 +122,7 @@ public final class DynaShopAPI
         }
 
         StackTrade uiClass = new StackTrade();
-        Inventory inventory = uiClass.getGui(player, shopName, tradeIdx, sell);
+        Inventory inventory = uiClass.getGui(player, shopName, tradeIdx);
         UIManager.Open(player, inventory, uiClass);
     }
 
