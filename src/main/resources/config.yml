@@ -18,6 +18,9 @@ UI.ShopInfoButtonIcon : OAK_SIGN
 UI.BalanceButtonIcon : EMERALD
 UI.SellToggleButtonIcon : GREEN_STAINED_GLASS
 UI.BuyToggleButtonIcon : RED_STAINED_GLASS
+UI.EnableStackTrade: true
+UI.MaxStackTradeAmount: 64
+UI.StackTradeIcon : CHEST
 UI.IntFormat: '###,###'
 UI.DoubleFormat: '###,##0.00'
 UI.LocalizedItemName: true

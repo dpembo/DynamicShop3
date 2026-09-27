@@ -109,6 +109,23 @@ public final class DynaShopAPI
         UIManager.Open(player, inventory, uiClass);
     }
 
+    // "구매/판매 수량을 스택 단위로 선택" 화면 생성 및 열기
+    public static void openStackTradeGui(Player player, String shopName, String tradeIdx, boolean sell)
+    {
+        if(!IsShopEnable(shopName))
+        {
+            if(!player.hasPermission(P_ADMIN_SHOP_EDIT))
+            {
+                player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "MESSAGE.SHOP_IS_CLOSED_BY_ADMIN"));
+                return;
+            }
+        }
+
+        StackTrade uiClass = new StackTrade();
+        Inventory inventory = uiClass.getGui(player, shopName, tradeIdx, sell);
+        UIManager.Open(player, inventory, uiClass);
+    }
+
 
     // 아이탬 파렛트 생성 및 열기
     public static void openItemPalette(Player player, int uiSubType, String shopName, int targetSlot, int page, String search)

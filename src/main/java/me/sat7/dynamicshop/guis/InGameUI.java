@@ -21,6 +21,7 @@ public class InGameUI
         ItemPalette,
         ItemSettings,
         ItemTrade,
+        StackTrade,
         QuickSell,
         Shop,
         ShopSettings,
@@ -206,6 +207,19 @@ public class InGameUI
         {
             mat = Material.RED_STAINED_GLASS;
             ConfigUtil.SetBuyToggleButtonIcon("RED_STAINED_GLASS");
+            ConfigUtil.Save();
+        }
+        return mat;
+    }
+
+    public static Material GetStackTradeButtonIconMat()
+    {
+        String iconName = ConfigUtil.GetStackTradeIcon();
+        Material mat = Material.getMaterial(iconName);
+        if (mat == null)
+        {
+            mat = Material.CHEST;
+            ConfigUtil.SetStackTradeIcon("CHEST");
             ConfigUtil.Save();
         }
         return mat;

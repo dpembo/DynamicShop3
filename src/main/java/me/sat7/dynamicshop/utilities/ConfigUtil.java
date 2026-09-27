@@ -40,6 +40,8 @@ public final class ConfigUtil
         header.add("NumberOfPlayer: This is used to calculate the recommended median. 3~100");
         header.add("UseLegacyStockStabilization: false = Changed by n% of the gap with median. true = Changed by n% of median.");
         header.add("DisplayStockAsStack: ex) true: 10Stacks, false: 640");
+        header.add("EnableStackTrade: Adds a 'buy/sell in stacks' button to the trade screen, letting players pick a quantity in whole stacks (1 to MaxStackTradeAmount) before confirming.");
+        header.add("MaxStackTradeAmount: The highest number of stacks selectable in that screen. 1~");
         header.add("Version: Do NOT edit this");
 
         DynamicShop.plugin.saveDefaultConfig();
@@ -244,6 +246,28 @@ public final class ConfigUtil
     public static void SetBuyToggleButtonIcon(String value)
     {
         config.set("UI.BuyToggleButtonIcon", value);
+    }
+
+    // [ StackTrade ] ==========
+
+    public static boolean GetEnableStackTrade()
+    {
+        return config.getBoolean("UI.EnableStackTrade");
+    }
+
+    public static int GetMaxStackTradeAmount()
+    {
+        return config.getInt("UI.MaxStackTradeAmount");
+    }
+
+    public static String GetStackTradeIcon()
+    {
+        return config.getString("UI.StackTradeIcon");
+    }
+
+    public static void SetStackTradeIcon(String value)
+    {
+        config.set("UI.StackTradeIcon", value);
     }
 
     public static String GetIntFormat()

@@ -805,6 +805,19 @@ public final class LangUtil
             ccLang.get().addDefault("TRADE.QUANTITY_LORE", "§eShift RMB: Edit Quantity");
             ccLang.get().addDefault("TRADE.WAIT_FOR_INPUT", "Enter the quantity that will be displayed in the Trade UI.\nExample: 1,2,4,8,16,32,64");
 
+            ccLang.get().addDefault("STACK_TRADE.TITLE_BUY", "§3Buy in Stacks");
+            ccLang.get().addDefault("STACK_TRADE.TITLE_SELL", "§3Sell in Stacks");
+            ccLang.get().addDefault("STACK_TRADE.ENTRY_BUY", "§cBuy in Stacks");
+            ccLang.get().addDefault("STACK_TRADE.ENTRY_BUY_LORE", "§eClick: Choose a quantity in stacks");
+            ccLang.get().addDefault("STACK_TRADE.ENTRY_SELL", "§2Sell in Stacks");
+            ccLang.get().addDefault("STACK_TRADE.ENTRY_SELL_LORE", "§eClick: Choose a quantity in stacks");
+            ccLang.get().addDefault("STACK_TRADE.DECREASE", "§c-{num} Stack(s)");
+            ccLang.get().addDefault("STACK_TRADE.INCREASE", "§a+{num} Stack(s)");
+            ccLang.get().addDefault("STACK_TRADE.SELECTED_NAME", "§f{stacks} Stack(s) selected");
+            ccLang.get().addDefault("STACK_TRADE.SELECTED_LORE", "§7{amount} {item}\n§7Total: {price}\n§8Max: {max} stacks");
+            ccLang.get().addDefault("STACK_TRADE.CONFIRM_BUY", "§a§nClick: Buy {amount} {item}");
+            ccLang.get().addDefault("STACK_TRADE.CONFIRM_SELL", "§a§nClick: Sell {amount} {item}");
+
             ccLang.get().addDefault("PAGE_EDITOR_TITLE", "§3Page Editor");
             ccLang.get().addDefault("PAGE_EDITOR.PREV", "§f<<");
             ccLang.get().addDefault("PAGE_EDITOR.NEXT", "§f>>");
