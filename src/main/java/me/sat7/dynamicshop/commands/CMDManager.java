@@ -20,6 +20,9 @@ public class CMDManager
     public static CopyShop copyShop;
     public static SetDefaultShop setDefaultShop;
     public static SetTax setTax;
+    public static Page page;
+    public static CreatePage createPage;
+    public static DeletePage deletePage;
 
     public static Account account;
     public static Add add;
@@ -61,6 +64,9 @@ public class CMDManager
         setDefaultShop = new SetDefaultShop();
         setTax = new SetTax();
         itemInfo = new ItemInfo();
+        page = new Page();
+        createPage = new CreatePage();
+        deletePage = new DeletePage();
 
         CMDHashMap.put("cmdhelp", commandHelp);
         CMDHashMap.put("createshop", createShop);
@@ -74,6 +80,9 @@ public class CMDManager
         CMDHashMap.put("setdefaultshop", setDefaultShop);
         CMDHashMap.put("settax", setTax);
         CMDHashMap.put("iteminfo", itemInfo);
+        CMDHashMap.put("page", page);
+        CMDHashMap.put("createpage", createPage);
+        CMDHashMap.put("deletepage", deletePage);
 
         // ds shop
         account = new Account();

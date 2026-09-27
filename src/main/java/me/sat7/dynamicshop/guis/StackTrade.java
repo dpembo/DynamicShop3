@@ -110,7 +110,10 @@ public final class StackTrade extends InGameUI
 
     private void CreateCurrentButton()
     {
-        ItemStack itemStack = new ItemStack(Material.getMaterial(material), 1);
+        // Amount on the icon is the stack count (not the total item count). The hover
+        // lore already shows total items and price; the stack number is what the player
+        // is adjusting with the +/- buttons, so surface it on the item itself.
+        ItemStack itemStack = new ItemStack(Material.getMaterial(material), Math.max(1, stackCount));
         if (itemMeta != null)
             itemStack.setItemMeta(itemMeta);
 
@@ -162,7 +165,11 @@ public final class StackTrade extends InGameUI
         String currency = ShopUtil.GetCurrency(ShopUtil.shopConfigFiles.get(shopName).get());
         if (ShopUtil.IsMultiCurrency(currency))
             return me.sat7.dynamicshop.economyhook.MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(currency), price, java.math.RoundingMode.CEILING);
-        return n(price);
+        if (currency.equalsIgnoreCase(me.sat7.dynamicshop.constants.Constants.S_JOBPOINT)
+                || currency.equalsIgnoreCase(me.sat7.dynamicshop.constants.Constants.S_PLAYERPOINT)
+                || currency.equalsIgnoreCase(me.sat7.dynamicshop.constants.Constants.S_EXP))
+            return n(price);
+        return me.sat7.dynamicshop.utilities.LangUtil.money(price);
     }
 
     @Override

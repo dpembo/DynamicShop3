@@ -7,6 +7,7 @@ import me.sat7.dynamicshop.DynaShopAPI;
 import me.sat7.dynamicshop.utilities.ConfigUtil;
 import me.sat7.dynamicshop.utilities.ItemsUtil;
 import me.sat7.dynamicshop.utilities.LangUtil;
+import me.sat7.dynamicshop.utilities.MenuPageUtil;
 import me.sat7.dynamicshop.utilities.ShopNameFormatter;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 import org.bukkit.Bukkit;
@@ -26,6 +27,10 @@ import me.sat7.dynamicshop.files.CustomConfig;
 import static me.sat7.dynamicshop.constants.Constants.P_ADMIN_SHOP_EDIT;
 import static me.sat7.dynamicshop.utilities.LangUtil.t;
 
+/**
+ * Start page and extra menu pages (category hubs). Root config is {@link #ccStartPage}
+ * (Startpage.yml). Other pages live under Pages/&lt;name&gt;.yml with the same layout.
+ */
 public final class StartPage extends InGameUI
 {
     public StartPage()
@@ -54,17 +59,36 @@ public final class StartPage extends InGameUI
         ccStartPage.save();
     }
 
+    /** Normalized page key; {@link MenuPageUtil#ROOT_PAGE_NAME} for Startpage.yml. */
+    private String pageName = MenuPageUtil.ROOT_PAGE_NAME;
     private int selectedIndex = -1;
 
     public Inventory getGui(Player player)
     {
+        return getGui(player, MenuPageUtil.ROOT_PAGE_NAME);
+    }
+
+    public Inventory getGui(Player player, String pageName)
+    {
         selectedIndex = -1;
+        this.pageName = MenuPageUtil.Normalize(pageName);
 
-        inventory = Bukkit.createInventory(player, ccStartPage.get().getInt("Options.UiSlotCount"),
-                ShopNameFormatter.format(ccStartPage.get().getString("Options.Title"), ConfigUtil.GetUseHexColorCode()));
+        CustomConfig pageCfg = MenuPageUtil.GetConfig(this.pageName);
+        if (pageCfg == null)
+        {
+            inventory = Bukkit.createInventory(player, 9, "§cPage not found");
+            return inventory;
+        }
 
-        //아이콘, 이름, 로어, 인덱스, 커맨드
-        ConfigurationSection cs = ccStartPage.get().getConfigurationSection("Buttons");
+        inventory = Bukkit.createInventory(player, pageCfg.get().getInt("Options.UiSlotCount"),
+                ShopNameFormatter.format(pageCfg.get().getString("Options.Title"), ConfigUtil.GetUseHexColorCode()));
+
+        ConfigurationSection cs = pageCfg.get().getConfigurationSection("Buttons");
+        if (cs == null)
+            return inventory;
+
+        String lineBreak = pageCfg.get().getString("Options.LineBreak", "/");
+
         for (String s : cs.getKeys(false))
         {
             try
@@ -80,7 +104,7 @@ public final class StartPage extends InGameUI
                 ArrayList<String> tempList = new ArrayList<>();
                 if (cs.contains(s + ".lore"))
                 {
-                    String[] lore = cs.getConfigurationSection(s).getString("lore").split(ccStartPage.get().getString("Options.LineBreak"));
+                    String[] lore = cs.getConfigurationSection(s).getString("lore").split(lineBreak);
                     tempList.addAll(Arrays.asList(lore));
                 }
 
@@ -103,7 +127,7 @@ public final class StartPage extends InGameUI
 
                 if (cs.contains(s + ".itemStack"))
                 {
-                    ItemMeta tempMeta = (ItemMeta) cs.get(s + ".itemStack"); // 저장된 메타 적용
+                    ItemMeta tempMeta = (ItemMeta) cs.get(s + ".itemStack");
                     meta = tempMeta.clone();
                 }
                 else
@@ -111,9 +135,7 @@ public final class StartPage extends InGameUI
                     meta = btn.getItemMeta();
                 }
 
-                // Shop buttons carry the shop's display name: full colour/hex/MiniMessage-colour support.
                 meta.displayName(ShopNameFormatter.formatItemName(name, ConfigUtil.GetUseHexColorCode()));
-                // Same pipeline as the button name (Rename), so Change Lore supports the same colours/formats.
                 meta.lore(ShopNameFormatter.formatLore(tempList, ConfigUtil.GetUseHexColorCode()));
                 meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                 meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
@@ -122,17 +144,40 @@ public final class StartPage extends InGameUI
 
             } catch (Exception e)
             {
-                DynamicShop.console.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "Fail to create Start page button");
+                DynamicShop.console.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "Fail to create menu page button");
                 DynamicShop.console.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + e);
             }
         }
         return inventory;
     }
 
+    public String getPageName()
+    {
+        return pageName;
+    }
+
+    private CustomConfig pageConfig()
+    {
+        return MenuPageUtil.GetConfig(pageName);
+    }
+
+    private void reopen(Player player)
+    {
+        DynaShopAPI.openMenuPage(player, pageName);
+    }
+
     @Override
     public void OnClickUpperInventory(InventoryClickEvent e)
     {
         Player player = (Player) e.getWhoClicked();
+        CustomConfig pageCfg = pageConfig();
+        if (pageCfg == null)
+        {
+            player.closeInventory();
+            return;
+        }
+
+        String lineBreak = pageCfg.get().getString("Options.LineBreak", "/");
 
         if (e.isLeftClick())
         {
@@ -140,12 +185,12 @@ public final class StartPage extends InGameUI
             {
                 if(e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR)
                 {
-                    String actionString = StartPage.ccStartPage.get().getString("Buttons." + e.getSlot() + ".action");
+                    String actionString = pageCfg.get().getString("Buttons." + e.getSlot() + ".action");
                     if(actionString == null || actionString.isEmpty())
                     {
-                        StartPage.ccStartPage.get().set("Buttons." + e.getSlot(), null);
-                        StartPage.ccStartPage.save();
-                        DynaShopAPI.openStartPage(player);
+                        pageCfg.get().set("Buttons." + e.getSlot(), null);
+                        pageCfg.save();
+                        reopen(player);
                     }
                 }
             }
@@ -153,26 +198,25 @@ public final class StartPage extends InGameUI
             {
                 if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR)
                 {
-                    // 새 버튼 추가
                     if (player.hasPermission(P_ADMIN_SHOP_EDIT))
                     {
-                        StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".displayName", "§3New Button");
-                        StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".lore", "§fnew button");
-                        StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".icon", Material.SUNFLOWER.name());
-                        StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".action", "");
-                        StartPage.ccStartPage.save();
+                        pageCfg.get().set("Buttons." + e.getSlot() + ".displayName", "§3New Button");
+                        pageCfg.get().set("Buttons." + e.getSlot() + ".lore", "§fnew button");
+                        pageCfg.get().set("Buttons." + e.getSlot() + ".icon", Material.SUNFLOWER.name());
+                        pageCfg.get().set("Buttons." + e.getSlot() + ".action", "");
+                        pageCfg.save();
 
-                        DynaShopAPI.openStartPage(player);
+                        reopen(player);
                     } else
                     {
                         return;
                     }
                 }
 
-                String actionStr = StartPage.ccStartPage.get().getString("Buttons." + e.getSlot() + ".action");
+                String actionStr = pageCfg.get().getString("Buttons." + e.getSlot() + ".action");
                 if (actionStr != null && actionStr.length() > 0)
                 {
-                    String[] action = actionStr.split(StartPage.ccStartPage.get().getString("Options.LineBreak"));
+                    String[] action = actionStr.split(lineBreak);
 
                     for (String s : action)
                     {
@@ -181,18 +225,15 @@ public final class StartPage extends InGameUI
                 }
             }
         }
-        // 우클릭
         else if (player.hasPermission(P_ADMIN_SHOP_EDIT))
         {
-            // 편집
             if (e.isShiftClick())
             {
                 if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
 
                 selectedIndex = e.getSlot();
-                DynaShopAPI.openStartPageSettingGui(player, selectedIndex);
+                DynaShopAPI.openMenuPageSettingGui(player, pageName, selectedIndex);
             }
-            // 이동
             else
             {
                 if (selectedIndex == -1)
@@ -205,20 +246,21 @@ public final class StartPage extends InGameUI
                 {
                     if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) return;
 
-                    StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".displayName", StartPage.ccStartPage.get().get("Buttons." + selectedIndex + ".displayName"));
-                    StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".lore", StartPage.ccStartPage.get().get("Buttons." + selectedIndex + ".lore"));
-                    StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".icon", StartPage.ccStartPage.get().get("Buttons." + selectedIndex + ".icon"));
-                    StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".itemStack", StartPage.ccStartPage.get().get("Buttons." + selectedIndex + ".itemStack"));
-                    StartPage.ccStartPage.get().set("Buttons." + e.getSlot() + ".action", StartPage.ccStartPage.get().get("Buttons." + selectedIndex + ".action"));
+                    pageCfg.get().set("Buttons." + e.getSlot() + ".displayName", pageCfg.get().get("Buttons." + selectedIndex + ".displayName"));
+                    pageCfg.get().set("Buttons." + e.getSlot() + ".lore", pageCfg.get().get("Buttons." + selectedIndex + ".lore"));
+                    pageCfg.get().set("Buttons." + e.getSlot() + ".icon", pageCfg.get().get("Buttons." + selectedIndex + ".icon"));
+                    pageCfg.get().set("Buttons." + e.getSlot() + ".itemStack", pageCfg.get().get("Buttons." + selectedIndex + ".itemStack"));
+                    pageCfg.get().set("Buttons." + e.getSlot() + ".action", pageCfg.get().get("Buttons." + selectedIndex + ".action"));
 
-                    if (StartPage.ccStartPage.get().getString("Buttons." + selectedIndex + ".action").length() > 0)
+                    String srcAction = pageCfg.get().getString("Buttons." + selectedIndex + ".action");
+                    if (srcAction != null && srcAction.length() > 0)
                     {
-                        StartPage.ccStartPage.get().set("Buttons." + selectedIndex, null);
+                        pageCfg.get().set("Buttons." + selectedIndex, null);
                     }
 
-                    StartPage.ccStartPage.save();
+                    pageCfg.save();
 
-                    DynaShopAPI.openStartPage(player);
+                    reopen(player);
                 }
             }
         }

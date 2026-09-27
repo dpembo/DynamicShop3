@@ -138,21 +138,39 @@ public class OnChat implements Listener
             switch (s)
             {
                 case "btnName":
-                    StartPage.ccStartPage.get().set("Buttons." + temp[1] + ".displayName", "§3" + e.getMessage());
-                    break;
                 case "btnLore":
-                    StartPage.ccStartPage.get().set("Buttons." + temp[1] + ".lore", "§f" + e.getMessage());
-                    break;
                 case "btnAction":
-                    StartPage.ccStartPage.get().set("Buttons." + temp[1] + ".action", ChatColor.stripColor(e.getMessage()));
+                {
+                    String interact = UserUtil.userInteractItem.get(uuid);
+                    String[] menuKey = me.sat7.dynamicshop.utilities.MenuPageUtil.ParseInteractKey(interact);
+                    String menuPage = me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME;
+                    String btnSlot = temp.length > 1 ? temp[1] : "0";
+                    if (menuKey != null)
+                    {
+                        menuPage = menuKey[0];
+                        btnSlot = menuKey[1];
+                    }
+                    me.sat7.dynamicshop.files.CustomConfig pageCfg = me.sat7.dynamicshop.utilities.MenuPageUtil.GetConfig(menuPage);
+                    if (pageCfg == null)
+                    {
+                        UserUtil.userTempData.put(uuid, "");
+                        DynaShopAPI.openStartPage(p);
+                        cancelRunnable(p);
+                        break;
+                    }
+                    if (s.equals("btnName"))
+                        pageCfg.get().set("Buttons." + btnSlot + ".displayName", "§3" + e.getMessage());
+                    else if (s.equals("btnLore"))
+                        pageCfg.get().set("Buttons." + btnSlot + ".lore", "§f" + e.getMessage());
+                    else
+                        pageCfg.get().set("Buttons." + btnSlot + ".action", ChatColor.stripColor(e.getMessage()));
+                    pageCfg.save();
+                    UserUtil.userTempData.put(uuid, "");
+                    DynaShopAPI.openMenuPage(p, menuPage);
+                    cancelRunnable(p);
                     break;
+                }
             }
-
-            StartPage.ccStartPage.save();
-
-            UserUtil.userTempData.put(uuid, "");
-            DynaShopAPI.openStartPage(p);
-            cancelRunnable(p);
         } else if (userData.equals("waitforCmdItem"))
         {
             e.setCancelled(true);

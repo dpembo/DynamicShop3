@@ -34,6 +34,7 @@ import me.sat7.dynamicshop.transactions.Calc;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 
 import static me.sat7.dynamicshop.constants.Constants.P_ADMIN_SHOP_EDIT;
+import static me.sat7.dynamicshop.utilities.LangUtil.money;
 import static me.sat7.dynamicshop.utilities.LangUtil.n;
 import static me.sat7.dynamicshop.utilities.LangUtil.t;
 import static me.sat7.dynamicshop.utilities.LayoutUtil.l;
@@ -150,7 +151,7 @@ public final class ItemTrade extends InGameUI
                     player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "TRADE.BALANCE") + ":§f " + MultiCurrencyHook.GetDisplayBalance(player, ShopUtil.GetMultiCurrencyId(ShopUtil.GetCurrency(data))));
                 } else
                 {
-                    player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "TRADE.BALANCE") + ":§f " + n(DynamicShop.getEconomy().getBalance(player)));
+                    player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "TRADE.BALANCE") + ":§f " + money(DynamicShop.getEconomy().getBalance(player)));
                 }
             } else if (e.getSlot() == SELL_ONLY_TOGGLE)
             {
@@ -239,7 +240,11 @@ public final class ItemTrade extends InGameUI
         String currency = ShopUtil.GetCurrency(shopData);
         if (ShopUtil.IsMultiCurrency(currency))
             return MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(currency), value, buy ? RoundingMode.CEILING : RoundingMode.FLOOR);
-        return n(value, isIntTypeCurrency);
+        if (currency.equalsIgnoreCase(Constants.S_JOBPOINT)
+                || currency.equalsIgnoreCase(Constants.S_PLAYERPOINT)
+                || currency.equalsIgnoreCase(Constants.S_EXP))
+            return n(value, isIntTypeCurrency);
+        return money(value, isIntTypeCurrency);
     }
 
     private void CreateBalanceButton()
@@ -266,7 +271,7 @@ public final class ItemTrade extends InGameUI
         }
         else
         {
-            myBalanceString = "§f" + n(DynamicShop.getEconomy().getBalance(player));
+            myBalanceString = "§f" + money(DynamicShop.getEconomy().getBalance(player));
         }
         String balStr;
         if (ShopUtil.getShopBalance(shopName) >= 0)
@@ -282,7 +287,7 @@ public final class ItemTrade extends InGameUI
             else if (ShopUtil.IsMultiCurrency(ShopUtil.GetCurrency(shopData)))
                 balStr = MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(ShopUtil.GetCurrency(shopData)), d, RoundingMode.FLOOR);
             else
-                balStr = n(d);
+                balStr = money(d);
         } else
         {
             balStr = t(player, "TRADE.SHOP_BAL_INF");

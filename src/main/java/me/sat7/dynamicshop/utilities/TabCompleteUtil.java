@@ -83,9 +83,12 @@ public final class TabCompleteUtil
                     Help.showHelp("main", (Player) sender, args);
 
                     temp.add("shop");
+                    temp.add("page");
                     temp.add("qsell");
                     if (sender.hasPermission(P_ADMIN_CREATE_SHOP)) temp.add("createshop");
+                    if (sender.hasPermission(P_ADMIN_CREATE_SHOP)) temp.add("createpage");
                     if (sender.hasPermission(P_ADMIN_DELETE_SHOP)) temp.add("deleteshop");
+                    if (sender.hasPermission(P_ADMIN_DELETE_SHOP)) temp.add("deletepage");
                     if (sender.hasPermission(P_ADMIN_MERGE_SHOP)) temp.add("mergeshop");
                     if (sender.hasPermission(P_ADMIN_RENAME_SHOP)) temp.add("renameshop");
                     if (sender.hasPermission(P_ADMIN_COPY_SHOP)) temp.add("copyshop");
@@ -99,6 +102,12 @@ public final class TabCompleteUtil
                     temp.add("cmdHelp");
 
                     AddToAutoCompleteIfValid(args[0]);
+                } else if (args.length == 2 && (args[0].equalsIgnoreCase("page") || args[0].equalsIgnoreCase("deletepage")))
+                {
+                    temp.add("start");
+                    for (String n : me.sat7.dynamicshop.utilities.MenuPageUtil.GetPageNames())
+                        temp.add(n);
+                    AddToAutoCompleteIfValid(args[1]);
                 } else if (args.length >= 2 && args[0].equals("shop"))
                 {
                     CustomConfig data = ShopUtil.shopConfigFiles.get(args[1]);

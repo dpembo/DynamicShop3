@@ -42,6 +42,8 @@ public final class ConfigUtil
         header.add("DisplayStockAsStack: ex) true: 10Stacks, false: 640");
         header.add("EnableStackTrade: Adds a 'buy/sell in stacks' button to the trade screen, letting players pick a quantity in whole stacks (1 to MaxStackTradeAmount) before confirming.");
         header.add("MaxStackTradeAmount: The highest number of stacks selectable in that screen. 1~");
+        header.add("CurrencySymbol: Prefix for Vault money prices in GUIs (e.g. $ → $1.25). Empty = none. Not used for points/exp/MultiCurrency.");
+        header.add("ConfirmPartialBuy: When true, buying fewer items than requested because of balance shows OK/Cancel first.");
         header.add("Version: Do NOT edit this");
 
         DynamicShop.plugin.saveDefaultConfig();
@@ -280,6 +282,22 @@ public final class ConfigUtil
         return config.getString("UI.DoubleFormat");
     }
 
+    /**
+     * Symbol prefixed onto Vault (money) prices in GUIs, e.g. {@code "$"} → {@code $1.25}.
+     * Empty string disables it. Not used for Job Points / PlayerPoints / Exp / MultiCurrency.
+     */
+    public static String GetCurrencySymbol()
+    {
+        String s = config.getString("UI.CurrencySymbol");
+        return s == null ? "" : s;
+    }
+
+    /** When a buy quantity is reduced by balance, show OK/Cancel before completing the purchase. */
+    public static boolean GetConfirmPartialBuy()
+    {
+        return config.getBoolean("UI.ConfirmPartialBuy", true);
+    }
+
     public static boolean GetLocalizedItemName()
     {
         return config.getBoolean("UI.LocalizedItemName");
@@ -371,6 +389,11 @@ public final class ConfigUtil
             SetDeliveryChargeMax(GetDeliveryChargeMin());
 
         SetNumberOfPlayer(Clamp(GetNumberOfPlayer(), 3, 100));
+
+        if (!config.contains("UI.CurrencySymbol"))
+            config.set("UI.CurrencySymbol", "$");
+        if (!config.contains("UI.ConfirmPartialBuy"))
+            config.set("UI.ConfirmPartialBuy", true);
     }
 
     @Getter

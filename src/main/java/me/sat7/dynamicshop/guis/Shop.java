@@ -30,6 +30,7 @@ import me.sat7.dynamicshop.transactions.Calc;
 import me.sat7.dynamicshop.transactions.MultiCurrencyTrade;
 
 import static me.sat7.dynamicshop.constants.Constants.P_ADMIN_SHOP_EDIT;
+import static me.sat7.dynamicshop.utilities.LangUtil.money;
 import static me.sat7.dynamicshop.utilities.LangUtil.n;
 import static me.sat7.dynamicshop.utilities.LangUtil.t;
 import static me.sat7.dynamicshop.utilities.LayoutUtil.l;
@@ -127,7 +128,11 @@ public final class Shop extends InGameUI
         String currency = ShopUtil.GetCurrency(shopData);
         if (ShopUtil.IsMultiCurrency(currency))
             return MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(currency), value, buy ? RoundingMode.CEILING : RoundingMode.FLOOR);
-        return n(value, isIntTypeCurrency);
+        if (currency.equalsIgnoreCase(Constants.S_JOBPOINT)
+                || currency.equalsIgnoreCase(Constants.S_PLAYERPOINT)
+                || currency.equalsIgnoreCase(Constants.S_EXP))
+            return n(value, isIntTypeCurrency);
+        return money(value, isIntTypeCurrency);
     }
 
     @Override
@@ -553,7 +558,7 @@ public final class Shop extends InGameUI
                 else if (ShopUtil.IsMultiCurrency(ShopUtil.GetCurrency(shopData)))
                     temp = MultiCurrencyHook.FormatAmount(ShopUtil.GetMultiCurrencyId(ShopUtil.GetCurrency(shopData)), ShopUtil.getShopBalance(shopName), RoundingMode.FLOOR);
                 else
-                    temp = n(ShopUtil.getShopBalance(shopName));
+                    temp = money(ShopUtil.getShopBalance(shopName));
 
                 finalShopBalanceText += t(player, "SHOP.SHOP_INFO_DASH") + temp + "\n";
             } else

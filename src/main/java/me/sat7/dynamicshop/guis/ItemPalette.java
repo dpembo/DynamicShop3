@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 import me.sat7.dynamicshop.DynaShopAPI;
 import me.sat7.dynamicshop.events.OnChat;
+import me.sat7.dynamicshop.files.CustomConfig;
 import me.sat7.dynamicshop.models.DSItem;
 import me.sat7.dynamicshop.utilities.ConfigUtil;
 import me.sat7.dynamicshop.utilities.ShopUtil;
@@ -371,7 +372,18 @@ public final class ItemPalette extends InGameUI
         }
         else
         {
-            DynaShopAPI.openStartPageSettingGui(player, shopSlotIndex);
+            String interact = UserUtil.userInteractItem.get(player.getUniqueId());
+            String[] menuKey = me.sat7.dynamicshop.utilities.MenuPageUtil.ParseInteractKey(interact);
+            if (menuKey != null)
+            {
+                int slot = shopSlotIndex;
+                try { slot = Integer.parseInt(menuKey[1]); } catch (NumberFormatException ignored) {}
+                DynaShopAPI.openMenuPageSettingGui(player, menuKey[0], slot);
+            }
+            else
+            {
+                DynaShopAPI.openStartPageSettingGui(player, shopSlotIndex);
+            }
         }
     }
 
@@ -505,26 +517,42 @@ public final class ItemPalette extends InGameUI
         {
             if (isLeft)
             {
-                StartPage.ccStartPage.get().set("Buttons." + shopSlotIndex + ".icon", item.getType().toString());
-
-                ItemMeta meta = item.getItemMeta();
-                if(meta != null)
-                {
-                    meta.setDisplayName(null);
-                    meta.setLore(null);
-                    StartPage.ccStartPage.get().set("Buttons." + shopSlotIndex + ".itemStack", meta);
-                }
-
-                StartPage.ccStartPage.save();
-
-                //DynaShopAPI.openStartPageSettingGui(player, shopSlotIndex);
-                DynaShopAPI.openStartPage(player);
+                applyMenuPageIcon(item);
             }
             else if (isRight && isShift)
             {
                 DynaShopAPI.openItemPalette(player, uiSubType, shopName, shopSlotIndex, 1, GetItemLastName(item));
             }
         }
+    }
+
+    private void applyMenuPageIcon(ItemStack item)
+    {
+        String interact = UserUtil.userInteractItem.get(player.getUniqueId());
+        String[] menuKey = me.sat7.dynamicshop.utilities.MenuPageUtil.ParseInteractKey(interact);
+        String menuPage = me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME;
+        int btnSlot = shopSlotIndex;
+        if (menuKey != null)
+        {
+            menuPage = menuKey[0];
+            try { btnSlot = Integer.parseInt(menuKey[1]); } catch (NumberFormatException ignored) {}
+        }
+        CustomConfig pageCfg = me.sat7.dynamicshop.utilities.MenuPageUtil.GetConfig(menuPage);
+        if (pageCfg == null)
+        {
+            DynaShopAPI.openStartPage(player);
+            return;
+        }
+        pageCfg.get().set("Buttons." + btnSlot + ".icon", item.getType().toString());
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null)
+        {
+            meta.setDisplayName(null);
+            meta.setLore(null);
+            pageCfg.get().set("Buttons." + btnSlot + ".itemStack", meta);
+        }
+        pageCfg.save();
+        DynaShopAPI.openMenuPage(player, menuPage);
     }
 
     private void OnClickUserItem(boolean isLeft, boolean isRight, ItemStack item)
@@ -547,24 +575,12 @@ public final class ItemPalette extends InGameUI
                 DynaShopAPI.openShopGui(player, shopName, shopSlotIndex / 45 + 1);
             }
         }
-        // 1 == StartPage
+        // 1 == StartPage / menu page
         else
         {
             if (isLeft)
             {
-                StartPage.ccStartPage.get().set("Buttons." + shopSlotIndex + ".icon", item.getType().toString());
-                ItemMeta meta = item.getItemMeta();
-                if(meta != null)
-                {
-                    meta.setDisplayName(null);
-                    meta.setLore(null);
-                    StartPage.ccStartPage.get().set("Buttons." + shopSlotIndex + ".itemStack", meta);
-                }
-
-                StartPage.ccStartPage.save();
-
-                //DynaShopAPI.openStartPageSettingGui(player, shopSlotIndex);
-                DynaShopAPI.openStartPage(player);
+                applyMenuPageIcon(item);
             }
         }
     }

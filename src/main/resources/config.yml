@@ -23,6 +23,12 @@ UI.MaxStackTradeAmount: 64
 UI.StackTradeIcon : CHEST
 UI.IntFormat: '###,###'
 UI.DoubleFormat: '###,##0.00'
+# Prefix shown on Vault (money) prices in GUIs, e.g. $ → $1.25. Leave empty for no symbol.
+# Not applied to Job Points, PlayerPoints, Exp, or MultiCurrency (those use their own format).
+UI.CurrencySymbol: '$'
+# When a buy is reduced because the player cannot afford the full amount, show OK/Cancel
+# before taking their money (avoids spending everything by accident).
+UI.ConfirmPartialBuy: true
 UI.LocalizedItemName: true
 UI.UsePlaceholderAPI : true
 UI.UseHexColorCode : true

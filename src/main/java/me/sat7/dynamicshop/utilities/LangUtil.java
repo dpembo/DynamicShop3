@@ -41,6 +41,21 @@ public final class LangUtil
             ccLang.get().addDefault("START_PAGE.EDIT_ACTION", "§f실행 명령어 바꾸기");
             ccLang.get().addDefault("START_PAGE.SHOP_SHORTCUT", "§f상점으로 가는 버튼 만들기");
             ccLang.get().addDefault("START_PAGE.CREATE_DECO", "§f장식 버튼 만들기");
+            ccLang.get().addDefault("HELP.PAGE", "메뉴 페이지를 엽니다 (Startpage와 같은 형식). 버튼 액션 예: ds page Blocks");
+            ccLang.get().addDefault("HELP.CREATE_PAGE", "Pages 폴더에 메뉴 페이지를 만듭니다. Startpage.yml과 같은 형식입니다.");
+            ccLang.get().addDefault("ERR.PAGE_NOT_FOUND", "§f해당 메뉴 페이지를 찾을 수 없습니다.");
+            ccLang.get().addDefault("ERR.PAGE_ALREADY_EXISTS", "§f이미 존재하는 메뉴 페이지입니다.");
+            ccLang.get().addDefault("ERR.PAGE_NAME_RESERVED", "§f'start'는 시작 페이지 전용 이름입니다.");
+            ccLang.get().addDefault("MESSAGE.PAGE_CREATED", "§f메뉴 페이지 '{page}'를 만들었습니다. /ds page {page}");
+            ccLang.get().addDefault("MESSAGE.PAGE_DELETED", "§f메뉴 페이지 '{page}'를 삭제했습니다.");
+            ccLang.get().addDefault("BUY_CONFIRM.TITLE", "§3구매 확인");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_NAME", "§e구매할 수 있는 수량");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE", "§f잔액으로 {requested}개 중 §a{amount}§f개만 구매할 수 있습니다.\n§f가격: §a{price}\n\n§7확인을 누르면 구매합니다.");
+            ccLang.get().addDefault("BUY_CONFIRM.OK", "§a확인");
+            ccLang.get().addDefault("BUY_CONFIRM.OK_LORE", "§7이 수량으로 구매합니다");
+            ccLang.get().addDefault("BUY_CONFIRM.CANCEL", "§c취소");
+            ccLang.get().addDefault("BUY_CONFIRM.CANCEL_LORE", "§7구매를 취소합니다");
+
             ccLang.get().addDefault("START_PAGE.ENTER_SHOP_NAME", "상점 이름을 입력하세요.");
             ccLang.get().addDefault("START_PAGE.DEFAULT_SHOP_LORE", "§f§n클릭: 상점으로 가기");
             ccLang.get().addDefault("START_PAGE.ITEM_MOVE_LORE", "§e우클릭: 이동");
@@ -588,6 +603,21 @@ public final class LangUtil
             ccLang.get().addDefault("START_PAGE.EDIT_ACTION", "§fChange command");
             ccLang.get().addDefault("START_PAGE.SHOP_SHORTCUT", "§fCreate shop button");
             ccLang.get().addDefault("START_PAGE.CREATE_DECO", "§fCreate decorative button");
+            ccLang.get().addDefault("HELP.PAGE", "Open a menu page (same format as the start page). Button action example: ds page Blocks");
+            ccLang.get().addDefault("HELP.CREATE_PAGE", "Create a menu page under the Pages folder. Same YAML layout as Startpage.yml.");
+            ccLang.get().addDefault("ERR.PAGE_NOT_FOUND", "§fMenu page not found.");
+            ccLang.get().addDefault("ERR.PAGE_ALREADY_EXISTS", "§fThat menu page already exists.");
+            ccLang.get().addDefault("ERR.PAGE_NAME_RESERVED", "§f'start' is reserved for the root start page.");
+            ccLang.get().addDefault("MESSAGE.PAGE_CREATED", "§fCreated menu page '{page}'. Open with /ds page {page}");
+            ccLang.get().addDefault("MESSAGE.PAGE_DELETED", "§fDeleted menu page '{page}'.");
+            ccLang.get().addDefault("BUY_CONFIRM.TITLE", "§3Confirm purchase");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_NAME", "§eAffordable amount");
+            ccLang.get().addDefault("BUY_CONFIRM.INFO_LORE", "§fYou can only afford §a{amount}§f of {requested}.\n§fCost: §a{price}\n\n§7Click Confirm to buy this amount.");
+            ccLang.get().addDefault("BUY_CONFIRM.OK", "§aConfirm");
+            ccLang.get().addDefault("BUY_CONFIRM.OK_LORE", "§7Buy this amount");
+            ccLang.get().addDefault("BUY_CONFIRM.CANCEL", "§cCancel");
+            ccLang.get().addDefault("BUY_CONFIRM.CANCEL_LORE", "§7Cancel this purchase");
+
             ccLang.get().addDefault("START_PAGE.ENTER_SHOP_NAME", "Please enter shop name");
             ccLang.get().addDefault("START_PAGE.DEFAULT_SHOP_LORE", "§f§nClick: go to shop");
             ccLang.get().addDefault("START_PAGE.ITEM_MOVE_LORE", "§eRMB: Move");
@@ -1316,5 +1346,23 @@ public final class LangUtil
             return intFormat.format((int)i);
         else
             return doubleFormat.format(i);
+    }
+
+    /**
+     * Formats a Vault (money) amount for GUI display, with optional {@code UI.CurrencySymbol} prefix
+     * (e.g. {@code $1.25}). Job Points / PlayerPoints / Exp / MultiCurrency should not use this.
+     */
+    public static String money(double amount)
+    {
+        return money(amount, false);
+    }
+
+    public static String money(double amount, boolean toInt)
+    {
+        String num = n(amount, toInt);
+        String symbol = ConfigUtil.GetCurrencySymbol();
+        if (symbol == null || symbol.isEmpty())
+            return num;
+        return symbol + num;
     }
 }

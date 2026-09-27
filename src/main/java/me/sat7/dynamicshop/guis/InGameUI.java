@@ -22,6 +22,7 @@ public class InGameUI
         ItemSettings,
         ItemTrade,
         StackTrade,
+        BuyConfirm,
         QuickSell,
         Shop,
         ShopSettings,

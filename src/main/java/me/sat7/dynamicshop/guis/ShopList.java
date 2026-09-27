@@ -1,7 +1,9 @@
 package me.sat7.dynamicshop.guis;
 
 import me.sat7.dynamicshop.DynaShopAPI;
+import me.sat7.dynamicshop.files.CustomConfig;
 import me.sat7.dynamicshop.utilities.MathUtil;
+import me.sat7.dynamicshop.utilities.MenuPageUtil;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -26,14 +28,21 @@ public class ShopList extends InGameUI
 
     private int page;
     private int maxPage;
+    private String menuPageName = MenuPageUtil.ROOT_PAGE_NAME;
     private int slotIndex;
 
     public Inventory getGui(Player player, int page, int slotIndex)
+    {
+        return getGui(player, page, MenuPageUtil.ROOT_PAGE_NAME, slotIndex);
+    }
+
+    public Inventory getGui(Player player, int page, String menuPageName, int slotIndex)
     {
         inventory = Bukkit.createInventory(player, 54, t(player, "START_PAGE.SHOP_LIST_TITLE"));
 
         this.maxPage = ShopUtil.shopConfigFiles.size() / 45 + 1;
         this.page = MathUtil.Clamp(page, 1, maxPage);
+        this.menuPageName = MenuPageUtil.Normalize(menuPageName);
         this.slotIndex = slotIndex;
 
         CreateExistShopList();
@@ -53,7 +62,7 @@ public class ShopList extends InGameUI
 
         if (e.getSlot() == CLOSE)
         {
-            DynaShopAPI.openStartPageSettingGui(player, slotIndex);
+            DynaShopAPI.openMenuPageSettingGui(player, menuPageName, slotIndex);
         } else if (e.getSlot() == PAGE)
         {
             if (e.isLeftClick())
@@ -68,17 +77,23 @@ public class ShopList extends InGameUI
                     page = 1;
             }
 
-            DynaShopAPI.openShopListUI(player, page, slotIndex);
+            DynaShopAPI.openShopListUI(player, page, menuPageName, slotIndex);
         } else if (e.getCurrentItem() != null &&
                 (e.getCurrentItem().getType() == Material.GREEN_STAINED_GLASS || e.getCurrentItem().getType() == Material.GRAY_STAINED_GLASS))
         {
             String shopName = e.getCurrentItem().getItemMeta().getDisplayName();
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".displayName", "§3" + shopName);
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".lore", t(player, "START_PAGE.DEFAULT_SHOP_LORE"));
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".action", "ds shop " + shopName);
-            StartPage.ccStartPage.save();
+            CustomConfig pageCfg = MenuPageUtil.GetConfig(menuPageName);
+            if (pageCfg == null)
+            {
+                player.closeInventory();
+                return;
+            }
+            pageCfg.get().set("Buttons." + slotIndex + ".displayName", "§3" + shopName);
+            pageCfg.get().set("Buttons." + slotIndex + ".lore", t(player, "START_PAGE.DEFAULT_SHOP_LORE"));
+            pageCfg.get().set("Buttons." + slotIndex + ".action", "ds shop " + shopName);
+            pageCfg.save();
 
-            DynaShopAPI.openStartPage(player);
+            DynaShopAPI.openMenuPage(player, menuPageName);
         }
     }
 
@@ -105,7 +120,10 @@ public class ShopList extends InGameUI
     private void CreateExistShopList()
     {
         existShopList.clear();
-        ConfigurationSection cs = StartPage.ccStartPage.get().getConfigurationSection("Buttons");
+        CustomConfig pageCfg = MenuPageUtil.GetConfig(menuPageName);
+        if (pageCfg == null)
+            return;
+        ConfigurationSection cs = pageCfg.get().getConfigurationSection("Buttons");
         if (cs != null)
         {
             for (String c : cs.getKeys(false))

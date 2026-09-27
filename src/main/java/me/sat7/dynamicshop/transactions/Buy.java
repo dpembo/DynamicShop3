@@ -31,6 +31,14 @@ public final class Buy
 
     public static void buy(String currency, Player player, String shopName, String tradeIdx, ItemStack itemStack, double priceSum, boolean infiniteStock)
     {
+        buy(currency, player, shopName, tradeIdx, itemStack, priceSum, infiniteStock, false);
+    }
+
+    /**
+     * @param skipPartialConfirm when true, do not show the partial-buy confirmation UI (already confirmed).
+     */
+    public static void buy(String currency, Player player, String shopName, String tradeIdx, ItemStack itemStack, double priceSum, boolean infiniteStock, boolean skipPartialConfirm)
+    {
         // MultiCurrency: asynchronous, atomic withdraw + idempotent retries; items only after the payment is applied.
         if (ShopUtil.IsMultiCurrency(currency))
         {
@@ -42,9 +50,12 @@ public final class Buy
         CustomConfig data = ShopUtil.shopConfigFiles.get(shopName);
 
         int tradeAmount = 0;
+        int requestedAmount = itemStack.getAmount();
         int stockOld = data.get().getInt(tradeIdx + ".stock");
         double priceBuyOld = Calc.getCurrentPrice(shopName, tradeIdx, true);
         double priceSellOld = DynaShopAPI.getSellPrice(shopName, itemStack);
+        double deliveryCharge = priceSum; // caller passes delivery charge as the starting priceSum
+        boolean limitedByMoney = false;
 
         double playerBalance = 0;
         if (currency.equalsIgnoreCase(Constants.S_EXP))
@@ -87,7 +98,10 @@ public final class Buy
 
             double price = Calc.getCurrentPrice(shopName, tradeIdx, true, true);
             if (priceSum + price > playerBalance)
+            {
+                limitedByMoney = true;
                 break;
+            }
 
             priceSum += price;
 
@@ -97,6 +111,19 @@ public final class Buy
             }
 
             tradeAmount++;
+        }
+
+        // Partial buy due to balance: ask before spending (unless already confirmed).
+        if (!skipPartialConfirm
+                && limitedByMoney
+                && tradeAmount > 0
+                && tradeAmount < requestedAmount
+                && ConfigUtil.GetConfirmPartialBuy())
+        {
+            data.get().set(tradeIdx + ".stock", stockOld); // undo provisional stock change
+            DynaShopAPI.openBuyConfirmGui(player, currency, shopName, tradeIdx, itemStack,
+                    requestedAmount, tradeAmount, priceSum, deliveryCharge, infiniteStock);
+            return;
         }
 
         // 실 구매 가능량이 0이다 = 돈이 없다.

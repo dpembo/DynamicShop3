@@ -109,6 +109,24 @@ public final class DynaShopAPI
         UIManager.Open(player, inventory, uiClass);
     }
 
+    /** Confirm a partial buy (balance cannot cover the full requested amount). */
+    public static void openBuyConfirmGui(Player player,
+                                         String currency,
+                                         String shopName,
+                                         String tradeIdx,
+                                         ItemStack itemTemplate,
+                                         int requestedAmount,
+                                         int affordableAmount,
+                                         double totalCost,
+                                         double deliveryCharge,
+                                         boolean infiniteStock)
+    {
+        BuyConfirm uiClass = new BuyConfirm();
+        Inventory inventory = uiClass.getGui(player, currency, shopName, tradeIdx, itemTemplate,
+                requestedAmount, affordableAmount, totalCost, deliveryCharge, infiniteStock);
+        UIManager.Open(player, inventory, uiClass);
+    }
+
     // "구매 수량을 스택 단위로 선택" 화면 생성 및 열기
     public static void openStackTradeGui(Player player, String shopName, String tradeIdx)
     {
@@ -179,27 +197,46 @@ public final class DynaShopAPI
         UIManager.Open(player, inventory, uiClass);
     }
 
-    // 스타트 페이지
+    // 스타트 페이지 (root menu page)
     public static void openStartPage(Player player)
     {
+        openMenuPage(player, me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME);
+    }
+
+    /**
+     * Open a menu page. Use {@link me.sat7.dynamicshop.utilities.MenuPageUtil#ROOT_PAGE_NAME}
+     * (or null/empty) for Startpage.yml; any other name loads Pages/&lt;name&gt;.yml.
+     */
+    public static void openMenuPage(Player player, String pageName)
+    {
         StartPage uiClass = new StartPage();
-        Inventory inventory = uiClass.getGui(player);
+        Inventory inventory = uiClass.getGui(player, pageName);
         UIManager.Open(player, inventory, uiClass);
     }
 
-    // 상점 목록창
+    // 상점 목록창 (for start/menu page button shop shortcut)
     public static void openShopListUI(Player player, int page, int slotIndex)
     {
+        openShopListUI(player, page, me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME, slotIndex);
+    }
+
+    public static void openShopListUI(Player player, int page, String menuPageName, int slotIndex)
+    {
         ShopList uiClass = new ShopList();
-        Inventory inventory = uiClass.getGui(player, page, slotIndex);
+        Inventory inventory = uiClass.getGui(player, page, menuPageName, slotIndex);
         UIManager.Open(player, inventory, uiClass);
     }
 
     // 컬러 픽커
     public static void openColorPicker(Player player, int slotIndex)
     {
+        openColorPicker(player, me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME, slotIndex);
+    }
+
+    public static void openColorPicker(Player player, String menuPageName, int slotIndex)
+    {
         ColorPicker uiClass = new ColorPicker();
-        Inventory inventory = uiClass.getGui(player, slotIndex);
+        Inventory inventory = uiClass.getGui(player, menuPageName, slotIndex);
         UIManager.Open(player, inventory, uiClass);
     }
 
@@ -220,8 +257,13 @@ public final class DynaShopAPI
     // 스타트페이지 셋팅창
     public static void openStartPageSettingGui(Player player, int slotIndex)
     {
+        openMenuPageSettingGui(player, me.sat7.dynamicshop.utilities.MenuPageUtil.ROOT_PAGE_NAME, slotIndex);
+    }
+
+    public static void openMenuPageSettingGui(Player player, String pageName, int slotIndex)
+    {
         StartPageSettings uiClass = new StartPageSettings();
-        Inventory inventory = uiClass.getGui(player, slotIndex);
+        Inventory inventory = uiClass.getGui(player, pageName, slotIndex);
         UIManager.Open(player, inventory, uiClass);
     }
 

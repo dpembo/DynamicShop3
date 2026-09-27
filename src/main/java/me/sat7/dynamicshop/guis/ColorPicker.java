@@ -3,6 +3,7 @@ package me.sat7.dynamicshop.guis;
 import me.sat7.dynamicshop.DynaShopAPI;
 import me.sat7.dynamicshop.DynamicShop;
 import me.sat7.dynamicshop.files.CustomConfig;
+import me.sat7.dynamicshop.utilities.MenuPageUtil;
 import me.sat7.dynamicshop.utilities.ShopUtil;
 import me.sat7.dynamicshop.utilities.UserUtil;
 import org.bukkit.Bukkit;
@@ -23,13 +24,21 @@ public class ColorPicker extends InGameUI
 
     private final int CLOSE = 18;
 
+    /** -1 = shop background; otherwise menu-page button slot */
     private int slotIndex;
+    private String menuPageName = MenuPageUtil.ROOT_PAGE_NAME;
 
     public Inventory getGui(Player player, int slotIndex)
+    {
+        return getGui(player, MenuPageUtil.ROOT_PAGE_NAME, slotIndex);
+    }
+
+    public Inventory getGui(Player player, String menuPageName, int slotIndex)
     {
         inventory = Bukkit.createInventory(player, 27, t(player, "COLOR_PICKER_TITLE"));
 
         this.slotIndex = slotIndex;
+        this.menuPageName = MenuPageUtil.Normalize(menuPageName);
 
         CreateColorButtons();
         CreateCloseButton(player, CLOSE);
@@ -51,7 +60,7 @@ public class ColorPicker extends InGameUI
             }
             else
             {
-                DynaShopAPI.openStartPageSettingGui(player, slotIndex);
+                DynaShopAPI.openMenuPageSettingGui(player, menuPageName, slotIndex);
             }
         }
         else if (slotIndex == -1)
@@ -70,13 +79,19 @@ public class ColorPicker extends InGameUI
         }
         else if(e.getCurrentItem() != null && !e.getCurrentItem().getType().isAir())
         {
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".displayName", null);
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".lore", null);
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".icon", ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()) + "_STAINED_GLASS_PANE");
-            StartPage.ccStartPage.get().set("Buttons." + slotIndex + ".action", "");
-            StartPage.ccStartPage.save();
+            CustomConfig pageCfg = MenuPageUtil.GetConfig(menuPageName);
+            if (pageCfg == null)
+            {
+                player.closeInventory();
+                return;
+            }
+            pageCfg.get().set("Buttons." + slotIndex + ".displayName", null);
+            pageCfg.get().set("Buttons." + slotIndex + ".lore", null);
+            pageCfg.get().set("Buttons." + slotIndex + ".icon", ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()) + "_STAINED_GLASS_PANE");
+            pageCfg.get().set("Buttons." + slotIndex + ".action", "");
+            pageCfg.save();
 
-            DynaShopAPI.openStartPage(player);
+            DynaShopAPI.openMenuPage(player, menuPageName);
         }
     }
 

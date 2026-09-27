@@ -42,6 +42,7 @@ public final class Reload extends DSCMD
 
         ShopUtil.Reload();
         StartPage.ccStartPage.reload();
+        me.sat7.dynamicshop.utilities.MenuPageUtil.Reload();
         DynamicShop.ccSign.reload();
 
         WorthUtil.ccWorth.reload();

@@ -58,6 +58,11 @@ public class Root implements CommandExecutor
                 Shop.shopCommand(args, player);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("page"))
+            {
+                CMDManager.page.RunCMD(args, player);
+                return true;
+            }
             else if (args[0].equalsIgnoreCase("qsell"))
             {
                 if (sender.hasPermission(Constants.P_USE_QSELL))

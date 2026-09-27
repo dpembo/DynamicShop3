@@ -511,6 +511,7 @@ public final class DynamicShop extends JavaPlugin implements Listener
         LayoutUtil.Setup();
 
         StartPage.setupStartPageFile();
+        me.sat7.dynamicshop.utilities.MenuPageUtil.Setup();
         setupSignFile();
         WorthUtil.setupWorthFile();
         SoundUtil.setupSoundFile();

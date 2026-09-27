@@ -47,29 +47,37 @@ public final class RenameShop extends DSCMD
             ShopUtil.renameShop(args[1], newName);
             sender.sendMessage(DynamicShop.dsPrefix(sender) + t(sender, "MESSAGE.CHANGES_APPLIED") + newName);
 
-            ConfigurationSection cs = StartPage.ccStartPage.get().getConfigurationSection("Buttons");
-            if (cs != null)
-            {
-                for (String c : cs.getKeys(false))
-                {
-                    String actionString = cs.getString(c + ".action");
-                    if (actionString == null || !actionString.contains(args[1]) || !actionString.contains("ds shop"))
-                        continue;
-
-                    cs.set(c + ".action", actionString.replace(args[1], args[2]));
-
-                    String nameString = cs.getString(c + ".displayName");
-                    if (nameString == null || !nameString.contains(args[1]))
-                        continue;
-
-                    cs.set(c + ".displayName", nameString.replace(args[1], args[2]));
-                }
-                StartPage.ccStartPage.save();
-            }
+            updateShopLinksInMenuPage(StartPage.ccStartPage, args[1], args[2]);
+            for (me.sat7.dynamicshop.files.CustomConfig pageCfg : me.sat7.dynamicshop.utilities.MenuPageUtil.pageConfigFiles.values())
+                updateShopLinksInMenuPage(pageCfg, args[1], args[2]);
         }
         else
         {
             sender.sendMessage(DynamicShop.dsPrefix(sender) + t(sender, "ERR.SHOP_NOT_FOUND"));
         }
+    }
+
+    private static void updateShopLinksInMenuPage(me.sat7.dynamicshop.files.CustomConfig pageCfg, String oldName, String newName)
+    {
+        if (pageCfg == null)
+            return;
+        ConfigurationSection cs = pageCfg.get().getConfigurationSection("Buttons");
+        if (cs == null)
+            return;
+        for (String c : cs.getKeys(false))
+        {
+            String actionString = cs.getString(c + ".action");
+            if (actionString == null || !actionString.contains(oldName) || !actionString.contains("ds shop"))
+                continue;
+
+            cs.set(c + ".action", actionString.replace(oldName, newName));
+
+            String nameString = cs.getString(c + ".displayName");
+            if (nameString == null || !nameString.contains(oldName))
+                continue;
+
+            cs.set(c + ".displayName", nameString.replace(oldName, newName));
+        }
+        pageCfg.save();
     }
 }
