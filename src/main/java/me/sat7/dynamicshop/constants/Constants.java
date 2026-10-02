@@ -28,6 +28,7 @@ public final class Constants
     public static final String P_USE = "dshop.use"; // 이 권한은 기본적으로 지급됨
     public static final String P_SELL = "dshop.sell"; // 이 권한은 기본적으로 지급됨
     public static final String P_USE_QSELL = "dshop.use.qsell"; // 이 권한은 기본적으로 지급됨
+    public static final String P_SELL_GUI = "dshop.use.sellgui"; // Sell GUI (deposit inventory)
 
     // Currency
     public static final String S_VAULT = "Vault";

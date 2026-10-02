@@ -3,6 +3,7 @@ package me.sat7.dynamicshop.events;
 import me.sat7.dynamicshop.DynaShopAPI;
 import me.sat7.dynamicshop.DynamicShop;
 import me.sat7.dynamicshop.guis.InGameUI;
+import me.sat7.dynamicshop.guis.SellGui;
 import me.sat7.dynamicshop.guis.UIManager;
 
 import me.sat7.dynamicshop.utilities.UserUtil;
@@ -19,9 +20,23 @@ public class OnClick implements Listener
     @EventHandler
     public void OnInventoryDragEvent(InventoryDragEvent e)
     {
-        // UI 인벤토리에 드래그로 아이탬 올리는것을 막음
-        if (UIManager.IsPlayerUsingPluginGUI((Player) e.getWhoClicked()))
-            e.setCancelled(true);
+        Player player = (Player) e.getWhoClicked();
+        if (!UIManager.IsPlayerUsingPluginGUI(player))
+            return;
+
+        // SellGui allows dragging into deposit slots only
+        if (UIManager.GetPlayerCurrentUIType(player) == InGameUI.UI_TYPE.SellGui)
+        {
+            InGameUI ui = UIManager.GetCurrentUI(player);
+            if (ui instanceof SellGui sellGui)
+            {
+                sellGui.OnDrag(e);
+                return;
+            }
+        }
+
+        // Block drag into other plugin UIs
+        e.setCancelled(true);
     }
 
     @EventHandler
@@ -50,6 +65,14 @@ public class OnClick implements Listener
 
             if (UIManager.IsPlayerUsingPluginGUI(player))
             {
+                // SellGui handles cancel itself for deposit slots
+                if (UIManager.GetPlayerCurrentUIType(player) == InGameUI.UI_TYPE.SellGui)
+                {
+                    UIManager.OnClickUpperInventory(e);
+                    // Do not force-cancel here; SellGui decides per slot
+                    return;
+                }
+
                 e.setCancelled(true);
                 UIManager.OnClickUpperInventory(e);
             }
@@ -64,6 +87,11 @@ public class OnClick implements Listener
                 UIManager.GetPlayerCurrentUIType(player) == InGameUI.UI_TYPE.StartPage)
             {
                 e.setCancelled(true);
+                UIManager.OnClickLowerInventory(e);
+            }
+            else if (UIManager.GetPlayerCurrentUIType(player) == InGameUI.UI_TYPE.SellGui)
+            {
+                // Allow normal interaction / shift-click into deposit slots
                 UIManager.OnClickLowerInventory(e);
             }
             // Shift클릭으로 상단의 UI인벤토리로 아이템 올리는것을 막음

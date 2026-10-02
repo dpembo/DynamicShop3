@@ -14,6 +14,8 @@ commands:
     description: "Open shop menu"
   sell:
     description: "Sell items"
+  sellgui:
+    description: "Open the sell GUI to deposit and sell items"
 permissions:
   dshop.use:
     description: Allows use of the /ds command
@@ -23,4 +25,7 @@ permissions:
     default: true
   dshop.use.qsell:
     description: Allows use of the /ds qsell command
+    default: true
+  dshop.use.sellgui:
+    description: Allows use of the /sellgui command
     default: true

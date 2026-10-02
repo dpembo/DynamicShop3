@@ -71,6 +71,14 @@ public class Root implements CommandExecutor
                     return true;
                 }
             }
+            else if (args[0].equalsIgnoreCase("sellgui"))
+            {
+                if (sender.hasPermission(Constants.P_SELL_GUI))
+                {
+                    DynaShopAPI.openSellGui(player);
+                    return true;
+                }
+            }
             else if (args[0].equalsIgnoreCase("dummyUUID") && DynamicShop.DEBUG_MODE && player.hasPermission(Constants.P_ADMIN_SHOP_EDIT))
             {
                 UserUtil.CreateDummyPlayerData(player, 1000);

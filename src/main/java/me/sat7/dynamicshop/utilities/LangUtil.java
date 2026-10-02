@@ -342,6 +342,13 @@ public final class LangUtil
             ccLang.get().addDefault("QUICK_SELL.GUIDE_TITLE", "§3§l빠른 판매 도움말");
             ccLang.get().addDefault("QUICK_SELL.GUIDE_LORE", "§a좌클릭으로 인벤토리에 있는 같은 유형의 아이템을 모두 팝니다.\n§a씨프트 좌클릭으로 클릭한 묶음만 팝니다.\n§a우클릭으로 해당 아이템 상점으로 이동합니다.");
 
+            ccLang.get().addDefault("SELL_GUI_TITLE", "§3아이템 판매");
+            ccLang.get().addDefault("SELL_GUI.SELL", "§a§l판매");
+            ccLang.get().addDefault("SELL_GUI.SELL_LORE", "§f넣은 아이템을 상점에 판매합니다.\n§7셜커 상자/번들은 내용물만 판매됩니다.");
+            ccLang.get().addDefault("SELL_GUI.CANCEL", "§c§l취소");
+            ccLang.get().addDefault("SELL_GUI.CANCEL_LORE", "§f아이템을 돌려받고 닫습니다.");
+            ccLang.get().addDefault("HELP.SELLGUI", "§f아이템을 넣고 판매하는 GUI를 엽니다.");
+
             ccLang.get().addDefault("ARROW.UP", "§a⬆");
             ccLang.get().addDefault("ARROW.DOWN", "§c⬇");
             ccLang.get().addDefault("ARROW.UP_2", "§c⬆");
@@ -915,6 +922,13 @@ public final class LangUtil
             ccLang.get().addDefault("QUICK_SELL_TITLE", "§3Quick Sell");
             ccLang.get().addDefault("QUICK_SELL.GUIDE_TITLE", "§3§lQuick Sell Guide");
             ccLang.get().addDefault("QUICK_SELL.GUIDE_LORE", "§aLeft-click to sell ALL items of this type in your inventory.\n§aShift left click to sell ONLY the stack you clicked.\n§aRight-click to go to the item shop.");
+
+            ccLang.get().addDefault("SELL_GUI_TITLE", "§3Sell Items");
+            ccLang.get().addDefault("SELL_GUI.SELL", "§a§lSell");
+            ccLang.get().addDefault("SELL_GUI.SELL_LORE", "§fSell all deposited items to the best shops.\n§7Shulker boxes and bundles sell their contents only.");
+            ccLang.get().addDefault("SELL_GUI.CANCEL", "§c§lCancel");
+            ccLang.get().addDefault("SELL_GUI.CANCEL_LORE", "§fReturn all items and close.");
+            ccLang.get().addDefault("HELP.SELLGUI", "§fOpen a GUI to deposit items and sell them.");
 
             ccLang.get().addDefault("ARROW.UP", "§a⬆");
             ccLang.get().addDefault("ARROW.DOWN", "§c⬇");

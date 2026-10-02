@@ -24,6 +24,7 @@ public class InGameUI
         StackTrade,
         BuyConfirm,
         QuickSell,
+        SellGui,
         Shop,
         ShopSettings,
         StartPage,

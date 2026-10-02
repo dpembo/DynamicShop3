@@ -492,4 +492,134 @@ public final class Sell
 
         return count;
     }
+    /**
+     * Sell a specific ItemStack that is not in the player's inventory (e.g. SellGUI deposit slot).
+     * Does not remove items from the player; the caller is responsible for clearing the source stack.
+     * Returns the amount actually sold (0 if nothing sold).
+     */
+    public static int sellExternalStack(Player player, ItemStack itemStack, boolean playSound)
+    {
+        if (player == null || itemStack == null || itemStack.getType().isAir())
+            return 0;
+
+        String[] ret = ShopUtil.FindTheBestShopToSell(player, itemStack);
+        if (ret[1].equals("-2") || ret[0] == null || ret[0].isEmpty())
+            return 0;
+
+        String shopName = ret[0];
+        int tradeIdx;
+        try
+        {
+            tradeIdx = Integer.parseInt(ret[1]);
+        }
+        catch (NumberFormatException e)
+        {
+            return 0;
+        }
+
+        if (tradeIdx < 0)
+            return 0;
+
+        CustomConfig data = ShopUtil.shopConfigFiles.get(shopName);
+        if (data == null)
+            return 0;
+
+        String currencyType = ShopUtil.GetCurrency(data);
+
+        if (CommandItemUtil.IsCommandItem(data.get(), String.valueOf(tradeIdx)))
+            return 0;
+
+        double priceSellOld = DynaShopAPI.getSellPrice(shopName, itemStack);
+        double priceBuyOld = Calc.getCurrentPrice(shopName, String.valueOf(tradeIdx), true);
+        int stockOld = data.get().getInt(tradeIdx + ".stock");
+        int maxStock = data.get().getInt(tradeIdx + ".maxStock", -1);
+
+        double deliveryCharge = ShopUtil.CalcShipping(shopName, player);
+        double priceSum = -deliveryCharge;
+
+        int tradeAmount = itemStack.getAmount();
+
+        if (maxStock != -1 && stockOld + tradeAmount > maxStock)
+        {
+            tradeAmount -= stockOld + tradeAmount - maxStock;
+            tradeAmount = Math.max(0, tradeAmount);
+        }
+
+        if (tradeAmount == 0)
+            return 0;
+
+        int sellLimit = ShopUtil.GetSellLimitPerPlayer(shopName, tradeIdx);
+        if (sellLimit != 0)
+        {
+            tradeAmount = UserUtil.CheckTradeLimitPerPlayer(player, shopName, tradeIdx, HashUtil.GetItemHash(itemStack), tradeAmount, true);
+            if (tradeAmount == 0)
+                return 0;
+        }
+
+        if (ShopUtil.getShopBalance(shopName) != -1
+                && ShopUtil.getShopBalance(shopName) < Calc.calcTotalCost(shopName, String.valueOf(tradeIdx), -tradeAmount)[0])
+        {
+            player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "MESSAGE.SHOP_BAL_LOW"));
+            return 0;
+        }
+
+        double[] calcResult = Calc.calcTotalCost(shopName, String.valueOf(tradeIdx), -tradeAmount);
+        priceSum += calcResult[0];
+
+        if (ShopUtil.IsMultiCurrency(currencyType))
+        {
+            final int amount = tradeAmount;
+            MultiCurrencyTrade.SubmitSell(player, currencyType, shopName, tradeIdx, itemStack, amount, priceSum, calcResult[1],
+                    stockOld > 0, sellLimit != Integer.MIN_VALUE, false, playSound ? "orb" : null,
+                    () -> {}, priceBuyOld, priceSellOld, stockOld);
+            return amount;
+        }
+
+        if (IsPayoutTooLow(currencyType, priceSum))
+        {
+            player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "MESSAGE.MC_PRICE_TOO_LOW"));
+            return 0;
+        }
+
+        Economy econ = DynamicShop.getEconomy();
+        if (!CheckTransactionSuccess(currencyType, player, priceSum))
+            return 0;
+
+        if (sellLimit != Integer.MIN_VALUE)
+        {
+            UserUtil.OnPlayerTradeLimitedItem(player, shopName, HashUtil.GetItemHash(itemStack), tradeAmount, true);
+        }
+
+        LogUtil.addLog(shopName, itemStack.getType().toString(), -tradeAmount, priceSum, currencyType, player.getName());
+
+        SendSellMessage(currencyType, econ, player, tradeAmount, priceSum, itemStack);
+
+        if (playSound)
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+
+        if (data.get().contains("Options.Balance"))
+        {
+            ShopUtil.addShopBalance(shopName, priceSum * -1);
+        }
+        if (stockOld > 0)
+        {
+            data.get().set(tradeIdx + ".stock", MathUtil.SafeAdd(stockOld, tradeAmount));
+        }
+
+        RunSellCommand(data, player, shopName, itemStack, tradeAmount, priceSum, calcResult[1]);
+
+        ShopUtil.shopDirty.put(shopName, true);
+
+        ShopBuySellEvent event = new ShopBuySellEvent(false, priceBuyOld, Calc.getCurrentPrice(shopName, String.valueOf(tradeIdx), true),
+                                                      priceSellOld,
+                                                      DynaShopAPI.getSellPrice(shopName, itemStack),
+                                                      stockOld,
+                                                      DynaShopAPI.getStock(shopName, itemStack),
+                                                      DynaShopAPI.getMedian(shopName, itemStack),
+                                                      shopName, itemStack, player);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return tradeAmount;
+    }
+
 }

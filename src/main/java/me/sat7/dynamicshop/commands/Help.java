@@ -39,6 +39,7 @@ public final class Help
             player.sendMessage(DynamicShop.dsPrefix(player) + t(player, "HELP.TITLE").replace("{command}", "main"));
             player.sendMessage(" - shop: " + t(player, "HELP.SHOP"));
             player.sendMessage(" - qsell: " + t(player, "HELP.QSELL"));
+            player.sendMessage(" - sellgui: " + t(player, "HELP.SELLGUI"));
             player.sendMessage(" - cmdHelp: " + t(player, "HELP.CMD"));
             if (player.hasPermission(P_ADMIN_CREATE_SHOP))
                 player.sendMessage("§e - createshop: " + t(player, "HELP.CREATE_SHOP"));

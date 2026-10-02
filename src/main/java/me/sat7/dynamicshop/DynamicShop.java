@@ -471,6 +471,7 @@ public final class DynamicShop extends JavaPlugin implements Listener
         getCommand("DynamicShop").setExecutor(new Root());
         getCommand("shop").setExecutor(new Optional());
         getCommand("sell").setExecutor(new Sell());
+        getCommand("sellgui").setExecutor(new me.sat7.dynamicshop.commands.SellGuiCmd());
 
         // auto-completion
         getCommand("DynamicShop").setTabCompleter(this);

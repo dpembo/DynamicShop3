@@ -265,6 +265,14 @@ public final class DynaShopAPI
         UIManager.Open(player, inventory, uiClass);
     }
 
+    /** Opens the deposit-style Sell GUI (place items, then Sell / Cancel). */
+    public static void openSellGui(Player player)
+    {
+        SellGui uiClass = new SellGui();
+        Inventory inventory = uiClass.getGui(player);
+        UIManager.Open(player, inventory, uiClass);
+    }
+
     // 유저 데이터를 다시 만들고 만들어졌는지 확인함.
     public static boolean recreateUserData(Player player)
     {

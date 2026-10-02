@@ -36,7 +36,20 @@ public class UIManager implements Listener
     {
         // 기존에 인벤토리가 열려있는 상태에서 다른것을 열면 close가 먼저 불림.
         Player player = (Player) e.getPlayer();
+        InGameUI ui = currentUI.get(player);
+        if (ui instanceof SellGui sellGui)
+        {
+            // Return any items left in the deposit slots if the player closed without selling
+            sellGui.returnDepositItems(player);
+        }
         currentUI.remove(player);
+    }
+
+    public static InGameUI GetCurrentUI(Player player)
+    {
+        if (player == null)
+            return null;
+        return currentUI.get(player);
     }
 
     public static void OnPlayerQuit(Player p)
