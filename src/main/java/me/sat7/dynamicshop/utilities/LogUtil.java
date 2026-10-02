@@ -32,9 +32,26 @@ public final class LogUtil
     // 거래 로그 기록
     public static void addLog(String shopName, String itemName, int amount, double value, String curr, String player)
     {
+        // Global debug trade log (toggle with /ds dbgLog). Independent of per-shop log settings and Log.SaveLogs.
+        if (DynamicShop.DEBUG_LOG_ENABLED)
+        {
+            String action = amount > 0 ? "BUY" : "SELL";
+            double rounded = Math.round(value * 10000) / 10000.0;
+            DynamicShop.PrintConsoleDbgLog(
+                    "[Trade] " + action
+                            + " player=" + player
+                            + " shop=" + shopName
+                            + " item=" + itemName
+                            + " amount=" + Math.abs(amount)
+                            + " value=" + rounded
+                            + " curr=" + curr);
+        }
+
         if (ConfigUtil.GetSaveLogs())
         {
             CustomConfig data = ShopUtil.shopConfigFiles.get(shopName);
+            if (data == null)
+                return;
 
             if (data.get().contains("Options.log") && data.get().getBoolean("Options.log")) // 옛날엔 이렇게 저장했음.
             {

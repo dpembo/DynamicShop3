@@ -79,6 +79,24 @@ public class Root implements CommandExecutor
                     return true;
                 }
             }
+            else if (args[0].equalsIgnoreCase("dbgLog") && player.hasPermission(Constants.P_ADMIN_SHOP_EDIT))
+            {
+                DynamicShop.DEBUG_LOG_ENABLED = !DynamicShop.DEBUG_LOG_ENABLED;
+                sender.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "DebugLog " + DynamicShop.DEBUG_LOG_ENABLED
+                        + " (console trade logs for all buys/sells)");
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("dbgToggle") && player.hasPermission(Constants.P_ADMIN_SHOP_EDIT))
+            {
+                DynamicShop.DEBUG_MODE = !DynamicShop.DEBUG_MODE;
+                sender.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "DebugMode " + DynamicShop.DEBUG_MODE);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("dbg") && DynamicShop.DEBUG_MODE && player.hasPermission(Constants.P_ADMIN_SHOP_EDIT))
+            {
+                DynamicShop.DebugLog();
+                return true;
+            }
             else if (args[0].equalsIgnoreCase("dummyUUID") && DynamicShop.DEBUG_MODE && player.hasPermission(Constants.P_ADMIN_SHOP_EDIT))
             {
                 UserUtil.CreateDummyPlayerData(player, 1000);
@@ -99,7 +117,8 @@ public class Root implements CommandExecutor
                 else if (args[0].equalsIgnoreCase("dbgLog"))
                 {
                     DynamicShop.DEBUG_LOG_ENABLED = !DynamicShop.DEBUG_LOG_ENABLED;
-                    sender.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "DebugLog " + DynamicShop.DEBUG_LOG_ENABLED);
+                    sender.sendMessage(Constants.DYNAMIC_SHOP_PREFIX + "DebugLog " + DynamicShop.DEBUG_LOG_ENABLED
+                            + " (console trade logs for all buys/sells)");
                     return true;
                 }
                 else if (args[0].equalsIgnoreCase("dbg") && DynamicShop.DEBUG_MODE)
@@ -129,4 +148,3 @@ public class Root implements CommandExecutor
     }
 
 }
-
